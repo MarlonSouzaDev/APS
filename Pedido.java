@@ -3,7 +3,7 @@ import java.util.Map;
 
 public class Pedido {
     private Map<Produto, Integer> itens;
-    private Estoque estoque;
+    private Estoque estoque
 
     public Pedido(Estoque estoque) {
         this.itens = new HashMap<>();
