@@ -1,10 +1,14 @@
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 public class LojaFitStore2 {
     private static Pedido2 pedido = new Pedido2();
@@ -94,23 +98,73 @@ public class LojaFitStore2 {
     }
 
     private static void adicionarProdutoEstoque(Scanner scanner) {
+        // Solicita e lê o nome do produto
         System.out.print("Digite o nome do produto: ");
         String nome = scanner.nextLine();
+        
+        final String nomeFinal = nome;
+        
+        // Verifica se o produto já está no estoque
+        boolean produtoJaExiste = Produto2.getEstoque().stream()
+        .anyMatch(produto -> produto.getNome().equalsIgnoreCase(nomeFinal));
 
-        System.out.print("Digite o preço do produto: ");
-        double preco = scanner.nextDouble();
-
-        System.out.print("Digite a quantidade do produto: ");
-        int quantidade = scanner.nextInt();
-
+        if (produtoJaExiste) {
+        System.out.println("Este produto já está no estoque.");
+        return; // Retorna para o menu principal sem adicionar o produto
+}
+        // Loop para garantir que o nome do produto não esteja em branco
+        while (nome.isEmpty()) {
+            System.out.println("Nome do produto não pode estar em branco.");
+            System.out.print("Digite o nome do produto: ");
+            nome = scanner.nextLine();
+        }
+    
+        double preco = 0;
+        boolean precoValido = false;
+        // Loop para garantir que o preço seja um número válido
+        while (!precoValido) {
+            try {
+                System.out.print("Digite o preço do produto (use ',' como separador decimal): ");
+                preco = scanner.nextDouble();
+                precoValido = true;
+            } catch (InputMismatchException e) {
+                // Se o usuário digitar um valor inválido, exibe uma mensagem de erro e limpa o buffer do scanner
+                System.out.println("Formato inválido para o preço. Por favor, use ',' como separador decimal.");
+                scanner.nextLine(); // Limpar o buffer do scanner
+            }
+        }
+    
+        int quantidade = 0;
+        boolean quantidadeValida = false;
+        // Loop para garantir que a quantidade seja um número inteiro válido
+        while (!quantidadeValida) {
+            try {
+                System.out.print("Digite a quantidade do produto: ");
+                quantidade = scanner.nextInt();
+                if (quantidade < 0) {
+                    System.out.println("A quantidade não pode ser negativa. Por favor, digite um valor válido.");
+                } else {
+                    quantidadeValida = true;
+                }
+            } catch (InputMismatchException e) {
+                // Se o usuário digitar um valor inválido, exibe uma mensagem de erro e limpa o buffer do scanner
+                System.out.println("Quantidade inválida. Por favor, digite um número inteiro.");
+                scanner.nextLine(); // Limpar o buffer do scanner
+            }
+        }
+    
+        // Adiciona o produto ao estoque
         Produto2.adicionarProduto(nome, preco, quantidade);
+        salvarEstoqueCSV();
     }
+    
 
     private static void removerProdutoEstoque(Scanner scanner) {
         System.out.print("Digite o ID do produto a ser removido: ");
         int id = scanner.nextInt();
 
         Produto2.removerProduto(id);
+        salvarEstoqueCSV();
     }
 
     private static void adicionarProdutoPedido(Scanner scanner) {
@@ -121,6 +175,7 @@ public class LojaFitStore2 {
         int quantidade = scanner.nextInt();
 
         pedido.adicionarProduto(produto,quantidade);
+        salvarPedidoCSV();
     }
 
     private static void removerItemPedido(Scanner scanner) {
@@ -128,6 +183,7 @@ public class LojaFitStore2 {
         String produto = scanner.nextLine();
 
         pedido.excluirProduto(produto);
+        salvarPedidoCSV();
     }
 
     private static void salvarEstoqueCSV() {
@@ -142,7 +198,6 @@ public class LojaFitStore2 {
 
     private static void salvarPedidoCSV() {
         try (FileWriter writer = new FileWriter("pedido.csv")) {
-            writer.write("Nome,Quantidade\n");
             for (String produto : pedido.getProdutosSelecionados()) {
                 int quantidade = pedido.getQuantidade(produto);
                 writer.write(produto + "," + quantidade + "\n");
@@ -155,45 +210,81 @@ public class LojaFitStore2 {
     private static void finalizarPedido() {
     List<Produto2> estoqueAtualizado = new ArrayList<>(Produto2.getEstoque());
     pedido.atualizarEstoque(estoqueAtualizado);
+    salvarEstoqueCSV();
 }
 
 
     private static void carregarEstoqueCSV() {
         try (BufferedReader br = new BufferedReader(new FileReader("estoque.csv"))) {
             String line;
-            boolean isEmpty = true;
             while ((line = br.readLine()) != null) {
-                isEmpty = false;
                 String[] parts = line.split(",");
                 String nome = parts[1];
                 double preco = Double.parseDouble(parts[2]);
                 int quantidade = Integer.parseInt(parts[3]);
-                Produto.adicionarProduto(nome, preco, quantidade);
+
+                // Verifica se o produto já existe no estoque
+                boolean produtoJaExiste = Produto2.getEstoque().stream()
+                        .anyMatch(produto -> produto.getNome().equalsIgnoreCase(nome));
+
+                if (!produtoJaExiste) {
+                    Produto2 produto = new Produto2(nome, preco, quantidade);
+                    Produto2.getEstoque().add(produto);
+                }
             }
-            if (isEmpty) {
-                System.out.println("Estoque não possui itens cadastrados");
-            }
+        removerDuplicatasEstoqueCSV();
+        } catch (FileNotFoundException e) {
         } catch (IOException e) {
             System.out.println("Erro ao carregar o estoque do CSV: " + e.getMessage());
         }
     }
 
+
     private static void carregarListaPedidoCSV() {
         try (BufferedReader br = new BufferedReader(new FileReader("pedido.csv"))) {
             String line;
-            boolean isEmpty = true;
             while ((line = br.readLine()) != null) {
-                isEmpty = false;
                 String[] parts = line.split(",");
                 String nome = parts[0];
                 int quantidade = Integer.parseInt(parts[1]);
-                pedido.adicionarProduto(nome, quantidade);
+                pedido.adicionarProduto(nome, quantidade); // Adiciona o produto diretamente ao pedido
             }
-            if (isEmpty) {
-                System.out.println("Não há itens para o pedido");
-            }
+        } catch (FileNotFoundException e) {
         } catch (IOException e) {
             System.out.println("Erro ao carregar o carrinho do CSV: " + e.getMessage());
         }
+        
     }
+    
+    private static void removerDuplicatasEstoqueCSV() {
+    try (BufferedReader br = new BufferedReader(new FileReader("estoque.csv"))) {
+        List<String> linhas = new ArrayList<>();
+        Set<Integer> ids = new HashSet<>();
+
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] parts = line.split(",");
+            int id = Integer.parseInt(parts[0]);
+            if (!ids.contains(id)) {
+                linhas.add(line);
+                ids.add(id);
+            }
+        }
+
+        try (FileWriter writer = new FileWriter("estoque.csv")) {
+            for (String linha : linhas) {
+                writer.write(linha + "\n");
+            }
+        }
+
+    } catch (FileNotFoundException e) {
+        // Arquivo não encontrado, não há itens no estoque
+    } catch (IOException e) {
+        System.out.println("Erro ao carregar o estoque do CSV: " + e.getMessage());
+    }
+
+    
+}
+
+
 }
