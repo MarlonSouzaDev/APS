@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Produto2 {
     private int id;
@@ -14,19 +16,20 @@ public class Produto2 {
         this.nome = nome;
         this.preco = preco;
         this.quantidade = quantidade;
-        estoque.add(id, this);
+        estoque.add(this);
     }
 
     public static void adicionarProduto(String nome, double preco, int quantidade){
         new Produto2(nome, preco, quantidade);
         System.out.println("Produto adicionado ao estoque: " + nome + " Quantidade: " + quantidade);
+        
     }
 
-    @SuppressWarnings("unlikely-arg-type")
-	public static void removerProduto(int id){
-        if (estoque.contains(id)){
-            Produto2 produto = estoque.get(id);
-            estoque.remove(id);
+    // Método para remover um produto do estoque
+    public static void removerProduto(int id) {
+        Produto2 produto = estoque.stream().filter(p -> p.getId() == id).findFirst().orElse(null);
+        if (produto != null) {
+            estoque.remove(produto);
             System.out.println("Produto removido do estoque: " + produto.getNome());
         } else {
             System.out.println("Produto não encontrado no estoque");
@@ -34,13 +37,25 @@ public class Produto2 {
     }
 
     public static void exibirListaProdutos() {
-        System.out.println("Lista de produtos no estoque:");
-        for (Produto2 produto : estoque) {
-            System.out.println("- ID: " + produto.getId() + ", Nome: " + produto.getNome() +
+            List<Produto2> estoque = Produto2.getEstoque();
+        
+            // Remove duplicatas de IDs mantendo a ordem de inserção
+            List<Produto2> estoqueSemDuplicatas = new ArrayList<>();
+            Set<Integer> ids = new HashSet<>();
+            for (Produto2 produto : estoque) {
+                if (ids.add(produto.getId())) {
+                    estoqueSemDuplicatas.add(produto);
+                }
+            }
+        
+            // Exibe o estoque sem duplicatas de IDs
+            System.out.println("Estoque:");
+            for (Produto2 produto : estoqueSemDuplicatas) {
+                System.out.println("- ID: " + produto.getId() + ", Nome: " + produto.getNome() +
                     ", Preço: " + produto.getPreco() + ", Quantidade: " + produto.getQuantidade());
-        }
-    }
-
+                }
+            }
+        
     public int getId() {
         return id;
     }
