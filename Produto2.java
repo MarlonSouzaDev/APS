@@ -47,7 +47,7 @@ public class Produto2 {
                     estoqueSemDuplicatas.add(produto);
                 }
             }
-        
+
             // Exibe o estoque sem duplicatas de IDs
             System.out.println("Estoque:");
             for (Produto2 produto : estoqueSemDuplicatas) {
