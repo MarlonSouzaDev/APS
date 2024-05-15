@@ -92,6 +92,8 @@ public class LojaFitStore2 {
         // Salvar dados da lista de pedidos em CSV
         salvarPedidoCSV();
 
+        removerDuplicatasEstoqueCSV();
+
         scanner.close();
 
         System.out.println("Programa encerrado.");
@@ -109,9 +111,9 @@ public class LojaFitStore2 {
         .anyMatch(produto -> produto.getNome().equalsIgnoreCase(nomeFinal));
 
         if (produtoJaExiste) {
-        System.out.println("Este produto já está no estoque.");
-        return; // Retorna para o menu principal sem adicionar o produto
-}
+            System.out.println("Este produto já está no estoque.");
+            return; // Retorna para o menu principal sem adicionar o produto
+        }
         // Loop para garantir que o nome do produto não esteja em branco
         while (nome.isEmpty()) {
             System.out.println("Nome do produto não pode estar em branco.");
@@ -155,7 +157,6 @@ public class LojaFitStore2 {
     
         // Adiciona o produto ao estoque
         Produto2.adicionarProduto(nome, preco, quantidade);
-        salvarEstoqueCSV();
     }
     
 
@@ -164,7 +165,6 @@ public class LojaFitStore2 {
         int id = scanner.nextInt();
 
         Produto2.removerProduto(id);
-        salvarEstoqueCSV();
     }
 
     private static void adicionarProdutoPedido(Scanner scanner) {
@@ -175,7 +175,6 @@ public class LojaFitStore2 {
         int quantidade = scanner.nextInt();
 
         pedido.adicionarProduto(produto,quantidade);
-        salvarPedidoCSV();
     }
 
     private static void removerItemPedido(Scanner scanner) {
@@ -183,7 +182,6 @@ public class LojaFitStore2 {
         String produto = scanner.nextLine();
 
         pedido.excluirProduto(produto);
-        salvarPedidoCSV();
     }
 
     private static void salvarEstoqueCSV() {
@@ -208,10 +206,10 @@ public class LojaFitStore2 {
     }
 
     private static void finalizarPedido() {
-    List<Produto2> estoqueAtualizado = new ArrayList<>(Produto2.getEstoque());
-    pedido.atualizarEstoque(estoqueAtualizado);
-    salvarEstoqueCSV();
-}
+        List<Produto2> estoqueAtualizado = new ArrayList<>(Produto2.getEstoque());
+        pedido.atualizarEstoque(estoqueAtualizado);
+        salvarEstoqueCSV();
+    }
 
 
     private static void carregarEstoqueCSV() {
@@ -232,7 +230,6 @@ public class LojaFitStore2 {
                     Produto2.getEstoque().add(produto);
                 }
             }
-        removerDuplicatasEstoqueCSV();
         } catch (FileNotFoundException e) {
         } catch (IOException e) {
             System.out.println("Erro ao carregar o estoque do CSV: " + e.getMessage());
@@ -283,8 +280,8 @@ public class LojaFitStore2 {
         System.out.println("Erro ao carregar o estoque do CSV: " + e.getMessage());
     }
 
+   
+}
     
 }
 
-
-}
