@@ -27,10 +27,17 @@ public class Produto2 {
 
     // Método para remover um produto do estoque
     public static void removerProduto(int id) {
-        Produto2 produto = estoque.stream().filter(p -> p.getId() == id).findFirst().orElse(null);
-        if (produto != null) {
-            estoque.remove(produto);
-            System.out.println("Produto removido do estoque: " + produto.getNome());
+        Produto2 produtoRemover = null;
+        for (Produto2 produto : estoque) {
+            if (produto.getId() == id) {
+                produtoRemover = produto;
+                break;
+            }
+        }
+        if (produtoRemover != null) {
+            estoque.remove(produtoRemover);
+            estoque.remove(produtoRemover);
+            System.out.println("Produto removido do estoque: " + produtoRemover.getNome());
         } else {
             System.out.println("Produto não encontrado no estoque");
         }
