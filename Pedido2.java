@@ -12,16 +12,38 @@ public class Pedido2 {
 
     // Método para adicionar um produto ao pedido
     public void adicionarProduto(String produto, int quantidade) {
+        // Verifica se o produto existe no estoque e obtém a quantidade disponível
+        Produto2 produtoNoEstoque = Produto2.getEstoque().stream()
+            .filter(p -> p.getNome().equalsIgnoreCase(produto))
+            .findFirst()
+            .orElse(null);
+
+        if (produtoNoEstoque == null) {
+            System.out.println("O produto " + produto + " não existe no estoque.");
+            return; // Sai do método sem adicionar o produto ao pedido
+        }
+
+        // Verifica se a quantidade desejada está disponível no estoque
+        if (produtoNoEstoque.getQuantidade() < quantidade) {
+            System.out.println("Quantidade insuficiente no estoque para o produto: " + produto);
+            return; // Sai do método sem adicionar o produto ao pedido
+        }
+
         int index = produtosSelecionados.indexOf(produto);
         if (index != -1) {
-            quantidade += quantidades.get(index); // Adiciona a nova quantidade à quantidade existente
-            quantidades.set(index, quantidade); // Atualiza a quantidade do produto no pedido
+            int novaQuantidade = quantidades.get(index) + quantidade; // Adiciona a nova quantidade à quantidade existente
+            if (produtoNoEstoque.getQuantidade() < novaQuantidade) {
+                System.out.println("Quantidade insuficiente no estoque para o produto: " + produto);
+                return; // Sai do método se a nova quantidade exceder a quantidade disponível
+            }
+            quantidades.set(index, novaQuantidade); // Atualiza a quantidade do produto no pedido
         } else {
             produtosSelecionados.add(produto);
             quantidades.add(quantidade);
         }
         System.out.println("Produto adicionado ao pedido: " + produto + " (Quantidade: " + quantidade + ")");
     }
+    
 
     // Método para excluir um produto do pedido
     public void excluirProduto(String produto) {
