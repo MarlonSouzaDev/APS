@@ -101,26 +101,34 @@ public class LojaFitStore2 {
 
     private static void adicionarProdutoEstoque(Scanner scanner) {
         // Solicita e lê o nome do produto
-        System.out.print("Digite o nome do produto: ");
-        String nome = scanner.nextLine();
+        String nome = "";
+        boolean nomeValido = false;
+    
+        // Loop para garantir que o nome do produto não esteja em branco e contenha apenas letras e espaços
+        while (!nomeValido) {
+            System.out.print("Digite o nome do produto: ");
+            nome = scanner.nextLine();
+            
+            if (nome.isEmpty()) {
+                System.out.println("Nome do produto não pode estar em branco.");
+            } else if (!nome.matches("[a-zA-Z ]+")) {
+                System.out.println("Nome do produto deve conter apenas letras.");
+            } else {
+                nomeValido = true;
+            }
+        }
         
         final String nomeFinal = nome;
         
         // Verifica se o produto já está no estoque
         boolean produtoJaExiste = Produto2.getEstoque().stream()
-        .anyMatch(produto -> produto.getNome().equalsIgnoreCase(nomeFinal));
-
+            .anyMatch(produto -> produto.getNome().equalsIgnoreCase(nomeFinal));
+    
         if (produtoJaExiste) {
             System.out.println("Este produto já está no estoque.");
             return; // Retorna para o menu principal sem adicionar o produto
         }
-        // Loop para garantir que o nome do produto não esteja em branco
-        while (nome.isEmpty()) {
-            System.out.println("Nome do produto não pode estar em branco.");
-            System.out.print("Digite o nome do produto: ");
-            nome = scanner.nextLine();
-        }
-    
+        
         double preco = 0;
         boolean precoValido = false;
         // Loop para garantir que o preço seja um número válido
@@ -128,7 +136,11 @@ public class LojaFitStore2 {
             try {
                 System.out.print("Digite o preço do produto (use ',' como separador decimal): ");
                 preco = scanner.nextDouble();
-                precoValido = true;
+                if (preco <= 0) {
+                    System.out.println("O preço deve ser maior que zero. Por favor, digite um valor válido.");
+                } else {
+                    precoValido = true;
+                }
             } catch (InputMismatchException e) {
                 // Se o usuário digitar um valor inválido, exibe uma mensagem de erro e limpa o buffer do scanner
                 System.out.println("Formato inválido para o preço. Por favor, use ',' como separador decimal.");
@@ -157,14 +169,15 @@ public class LojaFitStore2 {
     
         // Adiciona o produto ao estoque
         Produto2.adicionarProduto(nome, preco, quantidade);
-    }
-    
+    }    
 
     private static void removerProdutoEstoque(Scanner scanner) {
         System.out.print("Digite o ID do produto a ser removido: ");
         int id = scanner.nextInt();
+        scanner.nextLine(); // Consumir a quebra de linha após a leitura do número
 
         Produto2.removerProduto(id);
+        salvarEstoqueCSV();
     }
 
     private static void adicionarProdutoPedido(Scanner scanner) {
@@ -182,6 +195,7 @@ public class LojaFitStore2 {
         String produto = scanner.nextLine();
 
         pedido.excluirProduto(produto);
+
     }
 
     private static void salvarEstoqueCSV() {
@@ -196,14 +210,19 @@ public class LojaFitStore2 {
 
     private static void salvarPedidoCSV() {
         try (FileWriter writer = new FileWriter("pedido.csv")) {
-            for (String produto : pedido.getProdutosSelecionados()) {
-                int quantidade = pedido.getQuantidade(produto);
+            List<String> produtosSelecionados = pedido.getProdutosSelecionados();
+            List<Integer> quantidades = pedido.getQuantidades();
+    
+            for (int i = 0; i < produtosSelecionados.size(); i++) {
+                String produto = produtosSelecionados.get(i);
+                int quantidade = quantidades.get(i);
                 writer.write(produto + "," + quantidade + "\n");
             }
+            System.out.println("Pedido salvo com sucesso.");
         } catch (IOException e) {
             System.out.println("Erro ao salvar o pedido em CSV: " + e.getMessage());
         }
-    }
+    }    
 
     private static void finalizarPedido() {
         List<Produto2> estoqueAtualizado = new ArrayList<>(Produto2.getEstoque());
@@ -284,4 +303,3 @@ public class LojaFitStore2 {
 }
     
 }
-
