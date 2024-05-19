@@ -14,8 +14,8 @@ public class LojaFitStore2 {
     private static Pedido2 pedido = new Pedido2();
     public static void main(String[] args) {
 
-        carregarListaPedidoCSV();
         carregarEstoqueCSV();
+        carregarListaPedidoCSV();
 
         Scanner scanner = new Scanner(System.in);
         int opcao;
@@ -187,7 +187,8 @@ public class LojaFitStore2 {
         System.out.print("Digite a quantidade do produto: ");
         int quantidade = scanner.nextInt();
 
-        pedido.adicionarProduto(produto,quantidade);
+        pedido.adicionarAoPedido(produto,quantidade);
+        salvarPedidoCSV();
     }
 
     private static void removerItemPedido(Scanner scanner) {
@@ -228,6 +229,8 @@ public class LojaFitStore2 {
         List<Produto2> estoqueAtualizado = new ArrayList<>(Produto2.getEstoque());
         pedido.atualizarEstoque(estoqueAtualizado);
         salvarEstoqueCSV();
+        salvarPedidoCSV();
+        System.out.println("Baixa realizada com sucesso!");
     }
 
 
@@ -263,14 +266,16 @@ public class LojaFitStore2 {
                 String[] parts = line.split(",");
                 String nome = parts[0];
                 int quantidade = Integer.parseInt(parts[1]);
-                pedido.adicionarProduto(nome, quantidade); // Adiciona o produto diretamente ao pedido
+                pedido.adicionarAoPedido(nome, quantidade); // Adiciona o produto diretamente ao pedido
             }
         } catch (FileNotFoundException e) {
         } catch (IOException e) {
-            System.out.println("Erro ao carregar o carrinho do CSV: " + e.getMessage());
+            System.out.println("Erro ao ler o arquivo pedido.csv: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println("Erro ao converter quantidade para número: " + e.getMessage());
         }
-        
     }
+    
     
     private static void removerDuplicatasEstoqueCSV() {
     try (BufferedReader br = new BufferedReader(new FileReader("estoque.csv"))) {
