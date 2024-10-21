@@ -1,17 +1,16 @@
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-public class Produto2 {
+public class Produto {
     private int id;
     private static int proximoId = 1; // Variável estática para gerar o próximo ID automaticamente
     private String nome;
     private double preco;
     private int quantidade;
-    private static List<Produto2> estoque = new ArrayList<>();
+    private static List<Produto> estoque = new ArrayList<>();
 
-    public Produto2(String nome, double preco, int quantidade) {
+    // Constructor do Produto
+    public Produto(String nome, double preco, int quantidade) {
         this.id = proximoId++;
         this.nome = nome;
         this.preco = preco;
@@ -19,21 +18,23 @@ public class Produto2 {
         estoque.add(this);
     }
 
+    // Método  para adicionar um novo produto ao estoque
     public static void adicionarProduto(String nome, double preco, int quantidade){
-        new Produto2(nome, preco, quantidade);
+        new Produto(nome, preco, quantidade);
         System.out.println("Produto adicionado ao estoque: " + nome + " Quantidade: " + quantidade);
-        
     }
 
-    // Método para remover um produto do estoque
+    // Método para remover um produto do estoque, verificando se o mesmo existe no estoque
     public static void removerProduto(int id) {
-        Produto2 produtoRemover = null;
-        for (Produto2 produto : estoque) {
+        Produto produtoRemover = null;
+        for (Produto produto : estoque) {
             if (produto.getId() == id) {
                 produtoRemover = produto;
                 break;
             }
         }
+
+        // Se a variável for diferente de nula, o item é removido
         if (produtoRemover != null) {
             estoque.remove(produtoRemover);
             estoque.remove(produtoRemover);
@@ -43,26 +44,30 @@ public class Produto2 {
         }
     }
 
+    // Método para exibir a lista de estoque, verificando se há duplicatas na lista e removendo-as
     public static void exibirListaProdutos() {
-            List<Produto2> estoque = Produto2.getEstoque();
-        
-            // Remove duplicatas de IDs mantendo a ordem de inserção
-            List<Produto2> estoqueSemDuplicatas = new ArrayList<>();
-            Set<Integer> ids = new HashSet<>();
-            for (Produto2 produto : estoque) {
-                if (ids.add(produto.getId())) {
-                    estoqueSemDuplicatas.add(produto);
-                }
+        List<Produto> estoque = Produto.getEstoque();
+    
+        // Remove duplicatas de IDs mantendo a ordem de inserção
+        List<Produto> estoqueSemDuplicatas = new ArrayList<>();
+        List<Integer> ids = new ArrayList<>();
+        for (Produto produto : estoque) {
+            if (!ids.contains(produto.getId())) {
+                ids.add(produto.getId());
+                estoqueSemDuplicatas.add(produto);
             }
+        }
+    
+        // Exibe o estoque sem duplicatas de IDs
+        System.out.println("Estoque:");
+        for (Produto produto : estoqueSemDuplicatas) {
+            System.out.println("- ID: " + produto.getId() + ", Nome: " + produto.getNome() +
+                ", Preço: " + produto.getPreco() + ", Quantidade: " + produto.getQuantidade());
+        }
+    }
+    
+    // getters & setters
 
-            // Exibe o estoque sem duplicatas de IDs
-            System.out.println("Estoque:");
-            for (Produto2 produto : estoqueSemDuplicatas) {
-                System.out.println("- ID: " + produto.getId() + ", Nome: " + produto.getNome() +
-                    ", Preço: " + produto.getPreco() + ", Quantidade: " + produto.getQuantidade());
-                }
-            }
-        
     public int getId() {
         return id;
     }
@@ -83,7 +88,7 @@ public class Produto2 {
         this.quantidade = quantidade;
     }
 
-    public static List<Produto2> getEstoque() {
+    public static List<Produto> getEstoque() {
         return estoque;
     }
 }
