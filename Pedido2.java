@@ -1,11 +1,11 @@
-    import java.util.ArrayList;
+import java.util.ArrayList;
     import java.util.List;
 
-    public class Pedido2 {
+    public class Pedido {
         private List<String> produtosSelecionados;
         private List<Integer> quantidades;
 
-        public Pedido2() {
+        public Pedido() {
             this.produtosSelecionados = new ArrayList<>();
             this.quantidades = new ArrayList<>();
         }
@@ -13,27 +13,28 @@
         // Método para adicionar um produto ao pedido
         public void adicionarAoPedido(String produto, int quantidade) {
             // Verifica se o produto existe no estoque e obtém a quantidade disponível
-            Produto2 produtoNoEstoque = Produto2.getEstoque().stream()
-                .filter(p -> p.getNome().equalsIgnoreCase(produto))
-                .findFirst()
-                .orElse(null);
+            Produto produtoNoEstoque = Produto.getEstoque().stream()
+                .filter(p -> p.getNome().equalsIgnoreCase(produto)) // ignora maiúscula e minúscula
+                .findFirst() // retorna o primeiro encontrado
+                .orElse(null); //caso não encontre, retorna nulo
 
             if (produtoNoEstoque == null) {
                 System.out.println("O produto " + produto + " não existe no estoque.");
-                return; // Sai do método sem adicionar o produto ao pedido
+                return;
             }
 
             // Verifica se a quantidade desejada está disponível no estoque
             if (produtoNoEstoque.getQuantidade() < quantidade) {
-                System.out.println("Quantidade insuficiente no estoque para o produto: " + produto);
-                return; // Sai do método sem adicionar o produto ao pedido
+                System.out.println("Quantidade insuficiente no estoque para o produto: " + produto + ". Este produto possui " + produtoNoEstoque.getQuantidade() + "unidade(s).");
+                return;
             }
 
+            // Verifica se o produto selecionado já existe na lista de pedido
             int index = produtosSelecionados.indexOf(produto);
             if (index != -1) {
                 int novaQuantidade = quantidades.get(index) + quantidade; // Adiciona a nova quantidade à quantidade existente
                 if (produtoNoEstoque.getQuantidade() < novaQuantidade) {
-                    System.out.println("Quantidade insuficiente no estoque para o produto: " + produto);
+                    System.out.println("Quantidade insuficiente no estoque para o produto: " + produto + ". Este produto possui " + produtoNoEstoque.getQuantidade() + "unidade(s).");
                     return; // Sai do método se a nova quantidade exceder a quantidade disponível
                 }
                 quantidades.set(index, novaQuantidade); // Atualiza a quantidade do produto no pedido
@@ -68,11 +69,11 @@
         }
 
         // Método para atualizar o estoque após finalizar o pedido
-        public void atualizarEstoque(List<Produto2> estoque) {
+        public void atualizarEstoque(List<Produto> estoque) {
             for (int i = 0; i < produtosSelecionados.size(); i++) {
                 String produtoNome = produtosSelecionados.get(i);
                 int quantidadePedido = quantidades.get(i);
-                for (Produto2 produto : estoque) {
+                for (Produto produto : estoque) {
                     if (produtoNome.equals(produto.getNome())) {
                         if (quantidadePedido <= produto.getQuantidade()) {
                             produto.setQuantidade(produto.getQuantidade() - quantidadePedido);
@@ -86,6 +87,7 @@
             }
         }
 
+        // getters
         public List<String> getProdutosSelecionados() {
             return produtosSelecionados;
         }
@@ -99,4 +101,3 @@
             throw new UnsupportedOperationException("Unimplemented method 'getQuantidade'");
         }
     }
-
