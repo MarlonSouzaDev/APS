@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
-public class LojaFitStore2 {
-    private static Pedido2 pedido = new Pedido2();
+public class LojaFitStore {
+    private static Pedido pedido = new Pedido();
     public static void main(String[] args) {
 
         carregarEstoqueCSV();
@@ -27,7 +27,7 @@ public class LojaFitStore2 {
             System.out.println("2. Lista de Pedidos");
             System.out.println("0. Sair");
             System.out.print("Escolha uma opção: ");
-            opcao = scanner.nextInt();
+            opcao = scanner.nextInt();  
             scanner.nextLine(); // Consumir a quebra de linha após a leitura do número
 
             switch (opcao) {
@@ -50,7 +50,7 @@ public class LojaFitStore2 {
                                 removerProdutoEstoque(scanner);
                                 break;
                             case 3:
-                                Produto2.exibirListaProdutos();
+                                Produto.exibirListaProdutos();
                                 break;
                         }
                     } while (opcaoEstoque != 0);
@@ -69,6 +69,7 @@ public class LojaFitStore2 {
 
                         switch (opcaoPedido) {
                             case 1:
+                                Produto.exibirListaProdutos();
                                 adicionarProdutoPedido(scanner);
                                 break;
                             case 2:
@@ -121,7 +122,7 @@ public class LojaFitStore2 {
         final String nomeFinal = nome;
         
         // Verifica se o produto já está no estoque
-        boolean produtoJaExiste = Produto2.getEstoque().stream()
+        boolean produtoJaExiste = Produto.getEstoque().stream()
             .anyMatch(produto -> produto.getNome().equalsIgnoreCase(nomeFinal));
     
         if (produtoJaExiste) {
@@ -168,7 +169,7 @@ public class LojaFitStore2 {
         }
     
         // Adiciona o produto ao estoque
-        Produto2.adicionarProduto(nome, preco, quantidade);
+        Produto.adicionarProduto(nome, preco, quantidade);
     }    
 
     private static void removerProdutoEstoque(Scanner scanner) {
@@ -176,7 +177,7 @@ public class LojaFitStore2 {
         int id = scanner.nextInt();
         scanner.nextLine(); // Consumir a quebra de linha após a leitura do número
 
-        Produto2.removerProduto(id);
+        Produto.removerProduto(id);
         salvarEstoqueCSV();
     }
 
@@ -201,7 +202,7 @@ public class LojaFitStore2 {
 
     private static void salvarEstoqueCSV() {
         try (FileWriter writer = new FileWriter("estoque.csv")) {
-            for (Produto2 produto : Produto2.getEstoque()) {
+            for (Produto produto : Produto.getEstoque()) {
                 writer.write(produto.getId() + "," + produto.getNome() + "," + produto.getPreco() + "," + produto.getQuantidade() + "\n");
             }
         } catch (IOException e) {
@@ -226,7 +227,7 @@ public class LojaFitStore2 {
     }    
 
     private static void finalizarPedido() {
-        List<Produto2> estoqueAtualizado = new ArrayList<>(Produto2.getEstoque());
+        List<Produto> estoqueAtualizado = new ArrayList<>(Produto.getEstoque());
         pedido.atualizarEstoque(estoqueAtualizado);
         salvarEstoqueCSV();
         salvarPedidoCSV();
@@ -244,12 +245,12 @@ public class LojaFitStore2 {
                 int quantidade = Integer.parseInt(parts[3]);
 
                 // Verifica se o produto já existe no estoque
-                boolean produtoJaExiste = Produto2.getEstoque().stream()
+                boolean produtoJaExiste = Produto.getEstoque().stream()
                         .anyMatch(produto -> produto.getNome().equalsIgnoreCase(nome));
 
                 if (!produtoJaExiste) {
-                    Produto2 produto = new Produto2(nome, preco, quantidade);
-                    Produto2.getEstoque().add(produto);
+                    Produto produto = new Produto(nome, preco, quantidade);
+                    Produto.getEstoque().add(produto);
                 }
             }
         } catch (FileNotFoundException e) {
